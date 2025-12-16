@@ -800,3 +800,237 @@ sdc                    8:32   0   10G  0 disk
   └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
 sr0                   11:0    1 1024M  0 rom 
 ```
+
+### 8- Write files in directories and use your LVM.
+---
+
+## Example 3: Manipulate LVM
+### 1- Add another virtual Hard Drive to your Virtual Machine with 10 GiB Space.
+### 2- Make following partitions using fdisk:
+     a. sdd1 => 5 GiB
+     b. sdd2 => 5 GiB
+
+```bash
+[root@localhost ~]# lsblk
+NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sda                    8:0    0   20G  0 disk 
+├─sda1                 8:1    0    1G  0 part /boot
+└─sda2                 8:2    0   19G  0 part 
+  ├─rl-root          253:0    0   17G  0 lvm  /
+  └─rl-swap          253:1    0    2G  0 lvm  [SWAP]
+sdb                    8:16   0   10G  0 disk 
+├─sdb1                 8:17   0    4G  0 part 
+│ ├─anisa-database   253:3    0    7G  0 lvm  
+│ └─anisa-backup     253:4    0    9G  0 lvm  
+└─sdb2                 8:18   0    6G  0 part 
+  ├─anisa-monitoring 253:2    0    4G  0 lvm  
+  └─anisa-backup     253:4    0    9G  0 lvm  
+sdc                    8:32   0   10G  0 disk 
+├─sdc1                 8:33   0    7G  0 part 
+│ └─anisa-database   253:3    0    7G  0 lvm  
+└─sdc2                 8:34   0    3G  0 part 
+  └─anisa-backup     253:4    0    9G  0 lvm  
+sdd                    8:48   0   10G  0 disk 
+sr0                   11:0    1 1024M  0 rom
+```
+
+```bash
+[root@localhost ~]# df -h
+Filesystem           Size  Used Avail Use% Mounted on
+devtmpfs             4.0M     0  4.0M   0% /dev
+tmpfs                1.8G     0  1.8G   0% /dev/shm
+tmpfs                730M  9.2M  721M   2% /run
+/dev/mapper/rl-root   17G  5.7G   12G  34% /
+/dev/sda1            960M  344M  617M  36% /boot
+tmpfs                365M  100K  365M   1% /run/user/1000
+```
+
+```bash
+[root@localhost ~]# vim /etc/fstab
+#
+# /etc/fstab
+# Created by anaconda on Sat Dec 30 13:37:26 2023
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk/'.
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.
+#
+# After editing this file, run 'systemctl daemon-reload' to update systemd
+# units generated from this file.
+#
+/dev/mapper/rl-root     /                       xfs     defaults        0 0
+UUID=d5da29d5-5f65-4d1e-90d8-74db210d5b8d /boot                   xfs     defaults        0 0
+/dev/mapper/rl-swap     none                    swap    defaults        0 0
+/dev/mapper/anisa-monitoring  /mnt/monitoring  ext4  defaults  0 0
+/dev/mapper/anisa-database  /mnt/database  ext4  defaults  0  0
+/dev/anisa/backup  /mnt/backup  xfs  defaults  0  0
+```
+
+```bash
+[root@localhost ~]# mount -a
+mount: (hint) your fstab has been modified, but systemd still uses
+       the old version; use 'systemctl daemon-reload' to reload.
+```
+
+```bash
+[root@localhost ~]# systemctl daemon-reload
+```
+
+```bash
+[root@localhost ~]# mount -a
+```
+
+```bash
+[root@localhost ~]# df -h
+Filesystem                    Size  Used Avail Use% Mounted on
+devtmpfs                      4.0M     0  4.0M   0% /dev
+tmpfs                         1.8G     0  1.8G   0% /dev/shm
+tmpfs                         730M  9.2M  721M   2% /run
+/dev/mapper/rl-root            17G  5.7G   12G  34% /
+/dev/sda1                     960M  344M  617M  36% /boot
+tmpfs                         365M  100K  365M   1% /run/user/1000
+/dev/mapper/anisa-monitoring  3.9G   24K  3.7G   1% /mnt/monitoring
+/dev/mapper/anisa-database    6.8G   24K  6.5G   1% /mnt/database
+/dev/mapper/anisa-backup      9.0G   96M  8.9G   2% /mnt/backup
+```
+
+```bash
+[root@localhost ~]# fdisk /dev/sdd 
+
+Welcome to fdisk (util-linux 2.37.4).
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+Device does not contain a recognized partition table.
+Created a new DOS disklabel with disk identifier 0xc55a217c.
+
+Command (m for help): n
+Partition type
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended (container for logical partitions)
+Select (default p): p
+Partition number (1-4, default 1): 1
+First sector (2048-20971519, default 2048): 
+Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-20971519, default 20971519): +5G
+
+Created a new partition 1 of type 'Linux' and of size 5 GiB.
+
+Command (m for help): p
+Disk /dev/sdd: 10 GiB, 10737418240 bytes, 20971520 sectors
+Disk model: VBOX HARDDISK   
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0xc55a217c
+
+Device     Boot Start      End  Sectors Size Id Type
+/dev/sdd1        2048 10487807 10485760   5G 83 Linux
+
+Command (m for help): n
+Partition type
+   p   primary (1 primary, 0 extended, 3 free)
+   e   extended (container for logical partitions)
+Select (default p): p
+Partition number (2-4, default 2): 2
+First sector (10487808-20971519, default 10487808): 
+Last sector, +/-sectors or +/-size{K,M,G,T,P} (10487808-20971519, default 20971519): 
+
+Created a new partition 2 of type 'Linux' and of size 5 GiB.
+
+Command (m for help): p
+Disk /dev/sdd: 10 GiB, 10737418240 bytes, 20971520 sectors
+Disk model: VBOX HARDDISK   
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0xc55a217c
+
+Device     Boot    Start      End  Sectors Size Id Type
+/dev/sdd1           2048 10487807 10485760   5G 83 Linux
+/dev/sdd2       10487808 20971519 10483712   5G 83 Linux
+
+Command (m for help): t
+Partition number (1,2, default 2): 1
+Hex code or alias (type L to list all): lvm
+
+Changed type of partition 'Linux' to 'Linux LVM'.
+
+Command (m for help): p
+Disk /dev/sdd: 10 GiB, 10737418240 bytes, 20971520 sectors
+Disk model: VBOX HARDDISK   
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0xc55a217c
+
+Device     Boot    Start      End  Sectors Size Id Type
+/dev/sdd1           2048 10487807 10485760   5G 8e Linux LVM
+/dev/sdd2       10487808 20971519 10483712   5G 83 Linux
+
+Command (m for help): t
+Partition number (1,2, default 2): 2
+Hex code or alias (type L to list all): lvm
+
+Changed type of partition 'Linux' to 'Linux LVM'.
+
+Command (m for help): p
+Disk /dev/sdd: 10 GiB, 10737418240 bytes, 20971520 sectors
+Disk model: VBOX HARDDISK   
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0xc55a217c
+
+Device     Boot    Start      End  Sectors Size Id Type
+/dev/sdd1           2048 10487807 10485760   5G 8e Linux LVM
+/dev/sdd2       10487808 20971519 10483712   5G 8e Linux LVM
+
+Command (m for help): w
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+```
+
+```bash
+[root@localhost ~]# fdisk -l /dev/sdd
+Disk /dev/sdd: 10 GiB, 10737418240 bytes, 20971520 sectors
+Disk model: VBOX HARDDISK   
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0xc55a217c
+
+Device     Boot    Start      End  Sectors Size Id Type
+/dev/sdd1           2048 10487807 10485760   5G 8e Linux LVM
+/dev/sdd2       10487808 20971519 10483712   5G 8e Linux LVM
+```
+
+```bash
+[root@localhost ~]# lsblk
+NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sda                    8:0    0   20G  0 disk 
+├─sda1                 8:1    0    1G  0 part /boot
+└─sda2                 8:2    0   19G  0 part 
+  ├─rl-root          253:0    0   17G  0 lvm  /
+  └─rl-swap          253:1    0    2G  0 lvm  [SWAP]
+sdb                    8:16   0   10G  0 disk 
+├─sdb1                 8:17   0    4G  0 part 
+│ ├─anisa-database   253:3    0    7G  0 lvm  /mnt/database
+│ └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+└─sdb2                 8:18   0    6G  0 part 
+  ├─anisa-monitoring 253:2    0    4G  0 lvm  /mnt/monitoring
+  └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+sdc                    8:32   0   10G  0 disk 
+├─sdc1                 8:33   0    7G  0 part 
+│ └─anisa-database   253:3    0    7G  0 lvm  /mnt/database
+└─sdc2                 8:34   0    3G  0 part 
+  └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+sdd                    8:48   0   10G  0 disk 
+├─sdd1                 8:49   0    5G  0 part 
+└─sdd2                 8:50   0    5G  0 part 
+sr0                   11:0    1 1024M  0 rom
+```
