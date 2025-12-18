@@ -1034,3 +1034,675 @@ sdd                    8:48   0   10G  0 disk
 └─sdd2                 8:50   0    5G  0 part 
 sr0                   11:0    1 1024M  0 rom
 ```
+
+### 3- Make physical volume on sdd1 and sdd2:
+
+```bash
+[root@localhost ~]# pvcreate /dev/sdd[12]
+  Physical volume "/dev/sdd1" successfully created.
+  Physical volume "/dev/sdd2" successfully created.
+```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree 
+  /dev/sdb1  anisa lvm2 a--  <4.00g     0 
+  /dev/sdb2  anisa lvm2 a--  <6.00g     0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g     0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g     0 
+  /dev/sdd1        lvm2 ---   5.00g  5.00g
+  /dev/sdd2        lvm2 ---  <5.00g <5.00g
+```
+
+### 4- Remove physical volume /dev/sdd2
+
+```bash
+[root@localhost ~]# pvremove /dev/sdd2
+  Labels on physical volume "/dev/sdd2" successfully wiped.
+```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree
+  /dev/sdb1  anisa lvm2 a--  <4.00g    0 
+  /dev/sdb2  anisa lvm2 a--  <6.00g    0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g    0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g    0 
+  /dev/sdd1        lvm2 ---   5.00g 5.00g
+```
+
+### 5- Add PV /dev/sdd1 to volume group anisa:
+
+```bash
+[root@localhost ~]# vgextend anisa /dev/sdd1
+  Volume group "anisa" successfully extended
+```
+
+```bash
+[root@localhost ~]# vgs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  VG    #PV #LV #SN Attr   VSize  VFree 
+  anisa   5   3   0 wz--n- 24.98g <5.00g
+```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree 
+  /dev/sdb1  anisa lvm2 a--  <4.00g     0 
+  /dev/sdb2  anisa lvm2 a--  <6.00g     0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g     0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g     0 
+  /dev/sdd1  anisa lvm2 a--  <5.00g <5.00g
+```
+
+### 6- Remove PV /dev/sdd1 from volume group anisa:
+
+```bash
+[root@localhost ~]# vgreduce anisa /dev/sdd1
+  Removed "/dev/sdd1" from volume group "anisa"
+```
+
+```bash
+[root@localhost ~]# vgs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  VG    #PV #LV #SN Attr   VSize  VFree
+  anisa   4   3   0 wz--n- 19.98g    0 
+```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree
+  /dev/sdb1  anisa lvm2 a--  <4.00g    0 
+  /dev/sdb2  anisa lvm2 a--  <6.00g    0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g    0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g    0 
+  /dev/sdd1        lvm2 ---   5.00g 5.00g
+```
+
+### 7- Add PV /dev/sdd1 to volume group anisa again:
+
+```bash
+[root@localhost ~]# vgextend anisa /dev/sdd1
+  Volume group "anisa" successfully extended
+```
+
+```bash
+[root@localhost ~]# vgs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  VG    #PV #LV #SN Attr   VSize  VFree 
+  anisa   5   3   0 wz--n- 24.98g <5.00g
+```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree 
+  /dev/sdb1  anisa lvm2 a--  <4.00g     0 
+  /dev/sdb2  anisa lvm2 a--  <6.00g     0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g     0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g     0 
+  /dev/sdd1  anisa lvm2 a--  <5.00g <5.00g
+```
+
+### 8- Rename VG anisa to lpic2:
+
+```bash
+[root@localhost ~]# ls -l /dev/mapper/anisa-*
+lrwxrwxrwx 1 root root 7 Dec 16 20:51 /dev/mapper/anisa-backup -> ../dm-4
+lrwxrwxrwx 1 root root 7 Dec 16 20:51 /dev/mapper/anisa-database -> ../dm-3
+lrwxrwxrwx 1 root root 7 Dec 16 20:51 /dev/mapper/anisa-monitoring -> ../dm-2
+```
+
+```bash
+[root@localhost ~]# ls -l /dev/anisa
+total 0
+lrwxrwxrwx 1 root root 7 Dec 16 20:51 backup -> ../dm-4
+lrwxrwxrwx 1 root root 7 Dec 16 20:51 database -> ../dm-3
+lrwxrwxrwx 1 root root 7 Dec 16 20:51 monitoring -> ../dm-2
+```
+
+```bash
+[root@localhost ~]# vgrename anisa lpic2
+  Volume group "anisa" successfully renamed to "lpic2"
+```
+
+```bash
+[root@localhost ~]# ls -l /dev/mapper/anisa*
+ls: cannot access '/dev/mapper/anisa*': No such file or directory
+```
+
+```bash
+[root@localhost ~]# ls -l /dev/anisa/
+ls: cannot access '/dev/anisa/': No such file or directory
+```
+
+```bash
+[root@localhost ~]# ls -l /dev/mapper/lpic2-*
+lrwxrwxrwx 1 root root 7 Dec 16 21:53 /dev/mapper/lpic2-backup -> ../dm-4
+lrwxrwxrwx 1 root root 7 Dec 16 21:53 /dev/mapper/lpic2-database -> ../dm-3
+lrwxrwxrwx 1 root root 7 Dec 16 21:53 /dev/mapper/lpic2-monitoring -> ../dm-2
+```
+
+```bash
+[root@localhost ~]# ls -l /dev/lpic2/*
+lrwxrwxrwx 1 root root 7 Dec 16 21:53 /dev/lpic2/backup -> ../dm-4
+lrwxrwxrwx 1 root root 7 Dec 16 21:53 /dev/lpic2/database -> ../dm-3
+lrwxrwxrwx 1 root root 7 Dec 16 21:53 /dev/lpic2/monitoring -> ../dm-2
+```
+
+### 9- Rename VG lpic2 to anisa:
+
+```bash
+[root@localhost ~]# vgrename lpic2 anisa
+  Volume group "lpic2" successfully renamed to "anisa"
+```
+
+```bash
+[root@localhost ~]# df -h
+Filesystem           Size  Used Avail Use% Mounted on
+devtmpfs             4.0M     0  4.0M   0% /dev
+tmpfs                1.8G     0  1.8G   0% /dev/shm
+tmpfs                730M  9.3M  721M   2% /run
+/dev/mapper/rl-root   17G  5.7G   12G  34% /
+/dev/sda1            960M  344M  617M  36% /boot
+tmpfs                365M  104K  365M   1% /run/user/1000
+```
+
+```bash
+[root@localhost ~]# mount -a
+```
+
+```bash
+[root@localhost ~]# df -h
+Filesystem                    Size  Used Avail Use% Mounted on
+devtmpfs                      4.0M     0  4.0M   0% /dev
+tmpfs                         1.8G     0  1.8G   0% /dev/shm
+tmpfs                         730M  9.3M  721M   2% /run
+/dev/mapper/rl-root            17G  5.7G   12G  34% /
+/dev/sda1                     960M  344M  617M  36% /boot
+tmpfs                         365M  104K  365M   1% /run/user/1000
+/dev/mapper/anisa-monitoring  3.9G   24K  3.7G   1% /mnt/monitoring
+/dev/mapper/anisa-database    6.8G   24K  6.5G   1% /mnt/database
+/dev/mapper/anisa-backup      9.0G   96M  8.9G   2% /mnt/backup
+```
+
+---
+## Stages for Extending LVs:
+### 1- [optional] unmount LV => umount
+### 2- [optional] deactivate LV => lvchange
+### 3- Extend size for LV => lvextend, lvresize
+### 4- [optional] activate LV => lvchange
+### 5- Resize the filesystem => depends on filesystem
+### 6- [optional] mount => mount
+
+### 1- Prepare LV to change (Deactivating) → Recommended but not nessessary!
+
+```bash
+[root@localhost ~]# umount /dev/mapper/anisa-monitoring
+```
+
+```bash
+[root@localhost ~]# lvchange -an /dev/anisa/monitoring
+```
+
+```bash
+[root@localhost ~]# lvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  LV         VG    Attr       LSize Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  backup     anisa -wi-ao---- 8.98g                                                    
+  database   anisa -wi-ao---- 7.00g                                                    
+  monitoring anisa -wi------- 4.00g
+```
+
+### 2- Extend LV monitoring extra 2 GiB:
+
+```bash
+[root@localhost ~]# lvextend -L +2G /dev/anisa/monitoring 
+  Size of logical volume anisa/monitoring changed from 4.00 GiB (1024 extents) to 6.00 GiB (1536 extents).
+  Logical volume anisa/monitoring successfully resized.
+```
+
+```bash
+[root@localhost ~]# lvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  LV         VG    Attr       LSize Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  backup     anisa -wi-ao---- 8.98g                                                    
+  database   anisa -wi-ao---- 7.00g                                                    
+  monitoring anisa -wi------- 6.00g
+  ```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree 
+  /dev/sdb1  anisa lvm2 a--  <4.00g     0 
+  /dev/sdb2  anisa lvm2 a--  <6.00g     0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g     0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g     0 
+  /dev/sdd1  anisa lvm2 a--  <5.00g <3.00g
+```
+
+```bash
+[root@localhost ~]# lvchange -ay /dev/anisa/monitoring
+```
+
+```bash
+[root@localhost ~]# lvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  LV         VG    Attr       LSize Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  backup     anisa -wi-ao---- 8.98g                                                    
+  database   anisa -wi-ao---- 7.00g                                                    
+  monitoring anisa -wi-a----- 6.00g
+```
+
+### 3- Resize LV database to 10 GiB:
+
+```bash
+[root@localhost ~]# lvresize -l +100%FREE /dev/anisa/database
+  Size of logical volume anisa/database changed from 7.00 GiB (1792 extents) to <10.00 GiB (2559 extents).
+  Logical volume anisa/database successfully resized.
+```
+
+```bash
+[root@localhost ~]# lvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  LV         VG    Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  backup     anisa -wi-ao----   8.98g                                                    
+  database   anisa -wi-ao---- <10.00g                                                    
+  monitoring anisa -wi-a-----   6.00g
+  ```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree
+  /dev/sdb1  anisa lvm2 a--  <4.00g    0 
+  /dev/sdb2  anisa lvm2 a--  <6.00g    0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g    0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g    0 
+  /dev/sdd1  anisa lvm2 a--  <5.00g    0
+```
+
+```bash
+[root@localhost ~]# df -h
+Filesystem                  Size  Used Avail Use% Mounted on
+devtmpfs                    4.0M     0  4.0M   0% /dev
+tmpfs                       1.8G     0  1.8G   0% /dev/shm
+tmpfs                       730M  9.3M  721M   2% /run
+/dev/mapper/rl-root          17G  5.7G   12G  34% /
+/dev/sda1                   960M  344M  617M  36% /boot
+tmpfs                       365M  104K  365M   1% /run/user/1000
+/dev/mapper/anisa-database  6.8G   24K  6.5G   1% /mnt/database
+/dev/mapper/anisa-backup    9.0G   96M  8.9G   2% /mnt/backup
+```
+
+```bash
+[root@localhost ~]# mount -a
+```
+
+```bash
+[root@localhost ~]# df -hT
+Filesystem                   Type      Size  Used Avail Use% Mounted on
+devtmpfs                     devtmpfs  4.0M     0  4.0M   0% /dev
+tmpfs                        tmpfs     1.8G     0  1.8G   0% /dev/shm
+tmpfs                        tmpfs     730M  9.2M  721M   2% /run
+/dev/mapper/rl-root          xfs        17G  5.7G   12G  34% /
+/dev/sda1                    xfs       960M  344M  617M  36% /boot
+tmpfs                        tmpfs     365M  104K  365M   1% /run/user/1000
+/dev/mapper/anisa-database   ext4      6.8G   24K  6.5G   1% /mnt/database
+/dev/mapper/anisa-backup     xfs       9.0G   96M  8.9G   2% /mnt/backup
+/dev/mapper/anisa-monitoring ext4      3.9G   24K  3.7G   1% /mnt/monitoring
+```
+
+### (* We notice that the filesystem size is not chnaged on /dev/anisa/monitoring and /dev/anisa/database)
+
+```bash
+[root@localhost ~]# resize2fs /dev/anisa/monitoring 
+resize2fs 1.46.5 (30-Dec-2021)
+Filesystem at /dev/anisa/monitoring is mounted on /mnt/monitoring; on-line resizing required
+old_desc_blocks = 1, new_desc_blocks = 1
+The filesystem on /dev/anisa/monitoring is now 1572864 (4k) blocks long.
+```
+
+```bash
+[root@localhost ~]# resize2fs /dev/anisa/database 
+resize2fs 1.46.5 (30-Dec-2021)
+Filesystem at /dev/anisa/database is mounted on /mnt/database; on-line resizing required
+old_desc_blocks = 1, new_desc_blocks = 2
+The filesystem on /dev/anisa/database is now 2620416 (4k) blocks long.
+```
+
+```bash
+[root@localhost ~]# df -hT
+Filesystem                   Type      Size  Used Avail Use% Mounted on
+devtmpfs                     devtmpfs  4.0M     0  4.0M   0% /dev
+tmpfs                        tmpfs     1.8G     0  1.8G   0% /dev/shm
+tmpfs                        tmpfs     730M  9.2M  721M   2% /run
+/dev/mapper/rl-root          xfs        17G  5.7G   12G  34% /
+/dev/sda1                    xfs       960M  344M  617M  36% /boot
+tmpfs                        tmpfs     365M  104K  365M   1% /run/user/1000
+/dev/mapper/anisa-database   ext4      9.8G   24K  9.3G   1% /mnt/database
+/dev/mapper/anisa-backup     xfs       9.0G   96M  8.9G   2% /mnt/backup
+/dev/mapper/anisa-monitoring ext4      5.9G   24K  5.6G   1% /mnt/monitoring
+```
+
+---
+## Reducing LVs:
+### 1- unmount LV => umount
+### 2- check filesystem => fsck
+### 3- Resize filesystem => depend on filesystem
+### 4- Reduce LV => lvreduce / lvresize
+### 5- mount LV => mount
+
+## Example 4: Remove and Reduce LVM
+### * On reducing we have to do all extending actions vice versa 
+### ** Reducing can not be done without outage.
+
+### 1- Unmount and do filesystem check the logical volume monitoring:
+
+```bash
+[root@localhost ~]# umount /dev/anisa/monitoring
+```
+
+```bash
+[root@localhost ~]# echo $?
+0
+```
+
+```bash
+[root@localhost ~]# e2fsck -f /dev/anisa/monitoring
+e2fsck 1.46.5 (30-Dec-2021)
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+/dev/anisa/monitoring: 11/393216 files (0.0% non-contiguous), 45166/1572864 blocks
+```
+
+```bash
+[root@localhost ~]# echo $?
+0
+```
+
+### 2- Shrink the Logical Volume Block file (reduce 4 GiB):
+
+```bash
+[root@localhost ~]# resize2fs -p /dev/anisa/monitoring 5G
+resize2fs 1.46.5 (30-Dec-2021)
+Resizing the filesystem on /dev/anisa/monitoring to 1310720 (4k) blocks.
+Begin pass 3 (max = 48)
+Scanning inode table          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+The filesystem on /dev/anisa/monitoring is now 1310720 (4k) blocks long.
+```
+
+### 3- Reduce Logical Volume /dev/anisa/monitoring
+```bash
+[root@localhost ~]# lvreduce -L 5G /dev/anisa/monitoring 
+  File system ext4 found on anisa/monitoring.
+  File system size (5.00 GiB) is equal to the requested size (5.00 GiB).
+  File system reduce is not needed, skipping.
+  Size of logical volume anisa/monitoring changed from 6.00 GiB (1536 extents) to 5.00 GiB (1280 extents).
+  Logical volume anisa/monitoring successfully resized.
+```
+
+```bash
+[root@localhost ~]# mount -a
+```
+
+```bash
+[root@localhost ~]# df -h
+Filesystem                    Size  Used Avail Use% Mounted on
+devtmpfs                      4.0M     0  4.0M   0% /dev
+tmpfs                         1.8G     0  1.8G   0% /dev/shm
+tmpfs                         730M  9.3M  721M   2% /run
+/dev/mapper/rl-root            17G  5.7G   12G  34% /
+/dev/mapper/anisa-backup      9.0G   96M  8.9G   2% /mnt/backup
+/dev/sda1                     960M  344M  617M  36% /boot
+/dev/mapper/anisa-database    9.8G   24K  9.3G   1% /mnt/database
+tmpfs                         365M  100K  365M   1% /run/user/1000
+/dev/mapper/anisa-monitoring  4.9G   24K  4.6G   1% /mnt/monitoring
+```
+
+```bash
+[root@localhost ~]# lvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  LV         VG    Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  backup     anisa -wi-ao----   8.98g                                                    
+  database   anisa -wi-ao---- <10.00g                                                    
+  monitoring anisa -wi-ao----   5.00g 
+```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree
+  /dev/sdb1  anisa lvm2 a--  <4.00g    0 
+  /dev/sdb2  anisa lvm2 a--  <6.00g    0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g    0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g    0 
+  /dev/sdd1  anisa lvm2 a--  <5.00g 1.00g
+```
+
+```bash
+[root@localhost ~]# vgs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  VG    #PV #LV #SN Attr   VSize  VFree
+  anisa   5   3   0 wz--n- 24.98g 1.00g
+```
+
+## Example 5: Remove a disk
+
+### 1- Check the Physical Volumes:
+
+```bash
+[root@localhost ~]# lsblk
+NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sda                    8:0    0   20G  0 disk 
+├─sda1                 8:1    0    1G  0 part /boot
+└─sda2                 8:2    0   19G  0 part 
+  ├─rl-root          253:0    0   17G  0 lvm  /
+  └─rl-swap          253:1    0    2G  0 lvm  [SWAP]
+sdb                    8:16   0   10G  0 disk 
+├─sdb1                 8:17   0    4G  0 part 
+│ ├─anisa-database   253:3    0   10G  0 lvm  /mnt/database
+│ └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+└─sdb2                 8:18   0    6G  0 part 
+  ├─anisa-monitoring 253:2    0    5G  0 lvm  /mnt/monitoring
+  └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+sdc                    8:32   0   10G  0 disk 
+├─sdc1                 8:33   0    7G  0 part 
+│ └─anisa-database   253:3    0   10G  0 lvm  /mnt/database
+└─sdc2                 8:34   0    3G  0 part 
+  └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+sdd                    8:48   0   10G  0 disk 
+├─sdd1                 8:49   0    5G  0 part 
+│ ├─anisa-monitoring 253:2    0    5G  0 lvm  /mnt/monitoring
+│ └─anisa-database   253:3    0   10G  0 lvm  /mnt/database
+└─sdd2                 8:50   0    5G  0 part 
+sr0                   11:0    1 1024M  0 rom 
+```
+
+```bash
+[root@localhost ~]# ls /mnt/database/
+lost+found
+```
+
+```bash
+[root@localhost ~]# echo test > /mnt/database/file1
+```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree
+  /dev/sdb1  anisa lvm2 a--  <4.00g    0 
+  /dev/sdb2  anisa lvm2 a--  <6.00g    0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g    0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g    0 
+  /dev/sdd1  anisa lvm2 a--  <5.00g 1.00g
+```
+
+```bash
+[root@localhost ~]# pvcreate /dev/sdd2
+  Physical volume "/dev/sdd2" successfully created.
+```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree 
+  /dev/sdb1  anisa lvm2 a--  <4.00g     0 
+  /dev/sdb2  anisa lvm2 a--  <6.00g     0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g     0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g     0 
+  /dev/sdd1  anisa lvm2 a--  <5.00g  1.00g
+  /dev/sdd2        lvm2 ---  <5.00g <5.00g
+```
+
+```bash
+[root@localhost ~]# vgextend anisa /dev/sdd2
+  Volume group "anisa" successfully extended
+```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree 
+  /dev/sdb1  anisa lvm2 a--  <4.00g     0 
+  /dev/sdb2  anisa lvm2 a--  <6.00g     0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g     0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g     0 
+  /dev/sdd1  anisa lvm2 a--  <5.00g  1.00g
+  /dev/sdd2  anisa lvm2 a--  <5.00g <5.00g
+```
+
+```bash
+[root@localhost ~]# vgs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  VG    #PV #LV #SN Attr   VSize   VFree 
+  anisa   6   3   0 wz--n- <29.98g <6.00g
+```
+
+### 2- Move extends to get free extends on first PV:
+
+```bash
+[root@localhost ~]# pvmove /dev/sdb1
+  /dev/sdb1: Moved: 0.10%
+  /dev/sdb1: Moved: 25.02%
+  /dev/sdb1: Moved: 100.00%
+```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree 
+  /dev/sdb1  anisa lvm2 a--  <4.00g <4.00g
+  /dev/sdb2  anisa lvm2 a--  <6.00g     0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g     0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g     0 
+  /dev/sdd1  anisa lvm2 a--  <5.00g     0 
+  /dev/sdd2  anisa lvm2 a--  <5.00g  2.00g
+```
+
+```bash
+[root@localhost ~]# lsblk
+NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sda                    8:0    0   20G  0 disk 
+├─sda1                 8:1    0    1G  0 part /boot
+└─sda2                 8:2    0   19G  0 part 
+  ├─rl-root          253:0    0   17G  0 lvm  /
+  └─rl-swap          253:1    0    2G  0 lvm  [SWAP]
+sdb                    8:16   0   10G  0 disk 
+├─sdb1                 8:17   0    4G  0 part 
+└─sdb2                 8:18   0    6G  0 part 
+  ├─anisa-monitoring 253:2    0    5G  0 lvm  /mnt/monitoring
+  └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+sdc                    8:32   0   10G  0 disk 
+├─sdc1                 8:33   0    7G  0 part 
+│ └─anisa-database   253:3    0   10G  0 lvm  /mnt/database
+└─sdc2                 8:34   0    3G  0 part 
+  └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+sdd                    8:48   0   10G  0 disk 
+├─sdd1                 8:49   0    5G  0 part 
+│ ├─anisa-monitoring 253:2    0    5G  0 lvm  /mnt/monitoring
+│ ├─anisa-database   253:3    0   10G  0 lvm  /mnt/database
+│ └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+└─sdd2                 8:50   0    5G  0 part 
+  └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+sr0                   11:0    1 1024M  0 rom
+```
+
+### 3- Remove PV sdb1
+
+```bash
+[root@localhost ~]# vgreduce anisa /dev/sdb1
+  Removed "/dev/sdb1" from volume group "anisa"
+```
+
+```bash
+[root@localhost ~]# vgs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  VG    #PV #LV #SN Attr   VSize  VFree
+  anisa   5   3   0 wz--n- 25.98g 2.00g
+```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree
+  /dev/sdb1        lvm2 ---   4.00g 4.00g
+  /dev/sdb2  anisa lvm2 a--  <6.00g    0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g    0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g    0 
+  /dev/sdd1  anisa lvm2 a--  <5.00g    0 
+  /dev/sdd2  anisa lvm2 a--  <5.00g 2.00g
+```
+
+```bash
+[root@localhost ~]# pvremove /dev/sdb1
+  Labels on physical volume "/dev/sdb1" successfully wiped.
+```
+
+```bash
+[root@localhost ~]# pvs
+  Devices file sys_wwid t10.ATA_VBOX_HARDDISK_VBabb061c0-806b36a9 PVID vmaiA1d5KMNbia8sdTaaE6yFw02Adxyf last seen on /dev/sda2 not found.
+  PV         VG    Fmt  Attr PSize  PFree
+  /dev/sdb2  anisa lvm2 a--  <6.00g    0 
+  /dev/sdc1  anisa lvm2 a--  <7.00g    0 
+  /dev/sdc2  anisa lvm2 a--  <3.00g    0 
+  /dev/sdd1  anisa lvm2 a--  <5.00g    0 
+  /dev/sdd2  anisa lvm2 a--  <5.00g 2.00g
+```
+
+```bash
+[root@localhost ~]# lsblk
+NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sda                    8:0    0   20G  0 disk 
+├─sda1                 8:1    0    1G  0 part /boot
+└─sda2                 8:2    0   19G  0 part 
+  ├─rl-root          253:0    0   17G  0 lvm  /
+  └─rl-swap          253:1    0    2G  0 lvm  [SWAP]
+sdb                    8:16   0   10G  0 disk 
+├─sdb1                 8:17   0    4G  0 part 
+└─sdb2                 8:18   0    6G  0 part 
+  ├─anisa-monitoring 253:2    0    5G  0 lvm  /mnt/monitoring
+  └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+sdc                    8:32   0   10G  0 disk 
+├─sdc1                 8:33   0    7G  0 part 
+│ └─anisa-database   253:3    0   10G  0 lvm  /mnt/database
+└─sdc2                 8:34   0    3G  0 part 
+  └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+sdd                    8:48   0   10G  0 disk 
+├─sdd1                 8:49   0    5G  0 part 
+│ ├─anisa-monitoring 253:2    0    5G  0 lvm  /mnt/monitoring
+│ ├─anisa-database   253:3    0   10G  0 lvm  /mnt/database
+│ └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+└─sdd2                 8:50   0    5G  0 part 
+  └─anisa-backup     253:4    0    9G  0 lvm  /mnt/backup
+sr0                   11:0    1 1024M  0 rom
+```
